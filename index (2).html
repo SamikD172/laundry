@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Laundry">
+<meta name="theme-color" content="#f0ede6">
+<title>Laundry</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:#f0ede6;min-height:100vh;color:#1a1a18;overscroll-behavior:none;}
+
+.tabs{display:flex;background:#e6e3db;border-bottom:1px solid #d3d1c7;position:sticky;top:0;z-index:10;}
+.tab{flex:1;padding:15px 8px;font-size:14px;font-weight:500;text-align:center;cursor:pointer;color:#888780;border:none;background:none;font-family:inherit;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;-webkit-tap-highlight-color:transparent;}
+.tab.active{color:#1a1a18;border-bottom-color:#1a1a18;}
+
+.page{display:none;padding:1.5rem 1rem 5rem;max-width:480px;margin:0 auto;}
+.page.active{display:block;}
+
+.page-title{font-family:'DM Serif Display',serif;font-size:28px;color:#1a1a18;margin-bottom:3px;}
+.page-sub{font-size:12px;color:#888780;margin-bottom:1.25rem;}
+
+.date-row{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;}
+.date-label{font-size:13px;color:#888780;white-space:nowrap;}
+.date-input{flex:1;border:1px solid #d3d1c7;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fff;color:#1a1a18;outline:none;}
+.date-input:focus{border-color:#888780;}
+
+.total-bar{background:#fff;border-radius:14px;padding:13px 18px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;border:1px solid #e2e0d8;}
+.total-label{font-size:13px;color:#888780;}
+.total-num{font-size:24px;font-weight:500;}
+
+.grid{display:flex;flex-direction:column;gap:8px;}
+.item{background:#fff;border:1px solid #e2e0d8;border-radius:14px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;}
+.item-left{display:flex;align-items:center;gap:11px;}
+.icon-box{width:37px;height:37px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.name{font-size:14px;font-weight:500;}
+.controls{display:flex;align-items:center;gap:10px;}
+.btn{width:32px;height:32px;border-radius:50%;border:1px solid #d3d1c7;background:#f0ede6;cursor:pointer;font-size:21px;color:#1a1a18;display:flex;align-items:center;justify-content:center;line-height:1;transition:background 0.1s,transform 0.08s;user-select:none;-webkit-tap-highlight-color:transparent;padding:0;font-family:inherit;}
+.btn:active{transform:scale(0.88);background:#dddbd4;}
+.count{font-size:16px;font-weight:500;min-width:26px;text-align:center;}
+.count.nz{color:#185FA5;}
+
+.bottom-row{margin-top:1.25rem;display:flex;gap:8px;}
+.action-btn{flex:1;padding:12px;font-size:14px;font-family:inherit;border-radius:10px;cursor:pointer;font-weight:500;transition:background 0.12s,transform 0.08s;-webkit-tap-highlight-color:transparent;border:1px solid #d3d1c7;}
+.action-btn:active{transform:scale(0.97);}
+.reset-btn{background:#f0ede6;color:#888780;}
+.reset-btn:active{background:#dddbd4;}
+.save-btn{background:#1a1a18;color:#f0ede6;border-color:#1a1a18;}
+.save-btn:active{background:#333;}
+
+.h-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.h-title{font-family:'DM Serif Display',serif;font-size:28px;}
+.clear-all{font-size:12px;color:#c0392b;background:none;border:1px solid #f0c8c8;border-radius:7px;padding:5px 11px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.clear-all:active{background:#fdeaea;}
+
+.empty-state{text-align:center;padding:3rem 1rem;color:#aaa9a0;font-size:14px;line-height:1.9;}
+.entry-card{background:#fff;border:1px solid #e2e0d8;border-radius:14px;padding:14px 15px;margin-bottom:10px;}
+.entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.entry-date-text{font-weight:500;font-size:13px;}
+.entry-right{display:flex;align-items:center;gap:6px;}
+.entry-badge{font-size:11px;background:#f0ede6;border-radius:6px;padding:3px 8px;color:#888780;}
+.del-btn{background:none;border:none;cursor:pointer;font-size:15px;color:#ccc;line-height:1;padding:3px 5px;-webkit-tap-highlight-color:transparent;}
+.del-btn:active{color:#c0392b;}
+.entry-items{display:flex;flex-wrap:wrap;gap:6px;}
+.entry-chip{display:flex;align-items:center;gap:5px;font-size:12px;background:#f5f3ef;border-radius:7px;padding:4px 9px;color:#555;}
+.chip-count{font-weight:500;color:#1a1a18;}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a18;color:#f0ede6;font-size:13px;padding:10px 22px;border-radius:20px;opacity:0;transition:opacity 0.2s,transform 0.2s;pointer-events:none;white-space:nowrap;z-index:100;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('counter')">Counter</button>
+  <button class="tab" onclick="switchTab('history')">History</button>
+</div>
+
+<div class="page active" id="page-counter">
+  <p class="page-title">Laundry Counter</p>
+  <p class="page-sub">Set counts then save to history</p>
+  <div class="date-row">
+    <span class="date-label">Date given</span>
+    <input type="date" class="date-input" id="laundry-date">
+  </div>
+  <div class="total-bar">
+    <span class="total-label">Total items</span>
+    <span class="total-num" id="total">0</span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="bottom-row">
+    <button class="action-btn reset-btn" onclick="resetAll()">Reset</button>
+    <button class="action-btn save-btn" onclick="saveEntry()">Save to history</button>
+  </div>
+</div>
+
+<div class="page" id="page-history">
+  <div class="h-top">
+    <p class="h-title">Past Laundry</p>
+    <button class="clear-all" onclick="clearAll()">Clear all</button>
+  </div>
+  <div id="history-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ITEMS = [
+  {id:'half_pant',    label:'Half pants',    icon:'🩳', bg:'#E6F1FB'},
+  {id:'full_pant',    label:'Full pants',    icon:'👖', bg:'#EAF3DE'},
+  {id:'jeans',        label:'Jeans',         icon:'🔵', bg:'#DBEAFE'},
+  {id:'tshirt',       label:'T-shirts',      icon:'👕', bg:'#FBEAF0'},
+  {id:'towel',        label:'Towels',        icon:'🛁', bg:'#FAEEDA'},
+  {id:'blanket',      label:'Blanket',       icon:'🛏', bg:'#E1F5EE'},
+  {id:'pillow_cover', label:'Pillow covers', icon:'💤', bg:'#EEEDFE'},
+  {id:'bedsheet',     label:'Bedsheet',      icon:'🪡', bg:'#FAECE7'},
+];
+
+let counts = Object.fromEntries(ITEMS.map(it => [it.id, 0]));
+const todayStr = () => new Date().toISOString().split('T')[0];
+document.getElementById('laundry-date').value = todayStr();
+
+function renderCounter() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  let total = 0;
+  ITEMS.forEach(item => {
+    total += counts[item.id];
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML =
+      '<div class="item-left">' +
+        '<div class="icon-box" style="background:' + item.bg + '">' + item.icon + '</div>' +
+        '<span class="name">' + item.label + '</span>' +
+      '</div>' +
+      '<div class="controls">' +
+        '<button class="btn" onclick="change(\'' + item.id + '\',-1)">−</button>' +
+        '<span class="count ' + (counts[item.id] > 0 ? 'nz' : '') + '">' + counts[item.id] + '</span>' +
+        '<button class="btn" onclick="change(\'' + item.id + '\',1)">+</button>' +
+      '</div>';
+    grid.appendChild(el);
+  });
+  document.getElementById('total').textContent = total;
+}
+
+function change(id, delta) {
+  counts[id] = Math.max(0, counts[id] + delta);
+  renderCounter();
+}
+
+function resetAll() {
+  ITEMS.forEach(it => counts[it.id] = 0);
+  renderCounter();
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('laundry_history') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveEntry() {
+  const total = ITEMS.reduce((s, it) => s + counts[it.id], 0);
+  if (total === 0) { showToast('Add at least one item first'); return; }
+  const date = document.getElementById('laundry-date').value || todayStr();
+  const history = getHistory();
+  history.unshift({ id: Date.now(), date, counts: Object.assign({}, counts) });
+  localStorage.setItem('laundry_history', JSON.stringify(history));
+  showToast('Saved!');
+  resetAll();
+  document.getElementById('laundry-date').value = todayStr();
+}
+
+function formatDate(str) {
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const history = getHistory();
+  if (!history.length) {
+    list.innerHTML = '<div class="empty-state">No past laundry yet.<br>Save your first batch from the Counter tab.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  history.forEach(entry => {
+    const total = ITEMS.reduce((s, it) => s + (entry.counts[it.id] || 0), 0);
+    const nonZero = ITEMS.filter(it => (entry.counts[it.id] || 0) > 0);
+    const card = document.createElement('div');
+    card.className = 'entry-card';
+    const chips = nonZero.map(it =>
+      '<div class="entry-chip">' +
+        '<span>' + it.icon + ' ' + it.label + '</span>' +
+        '<span class="chip-count">× ' + entry.counts[it.id] + '</span>' +
+      '</div>'
+    ).join('');
+    card.innerHTML =
+      '<div class="entry-header">' +
+        '<span class="entry-date-text">' + formatDate(entry.date) + '</span>' +
+        '<span class="entry-right">' +
+          '<span class="entry-badge">' + total + ' items</span>' +
+          '<button class="del-btn" onclick="deleteEntry(' + entry.id + ')">✕</button>' +
+        '</span>' +
+      '</div>' +
+      '<div class="entry-items">' + chips + '</div>';
+    list.appendChild(card);
+  });
+}
+
+function deleteEntry(id) {
+  const history = getHistory().filter(e => e.id !== id);
+  localStorage.setItem('laundry_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function clearAll() {
+  if (!confirm('Delete all history? This cannot be undone.')) return;
+  localStorage.removeItem('laundry_history');
+  renderHistory();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['counter','history'][i] === tab));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  if (tab === 'history') renderHistory();
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+renderCounter();
+</script>
+</body>
+</html>

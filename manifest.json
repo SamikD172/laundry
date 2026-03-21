@@ -1,0 +1,21 @@
+{
+  "name": "Laundry Counter",
+  "short_name": "Laundry",
+  "start_url": "/laundry/",
+  "display": "standalone",
+  "background_color": "#f0ede6",
+  "theme_color": "#f0ede6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f455.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f455.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
